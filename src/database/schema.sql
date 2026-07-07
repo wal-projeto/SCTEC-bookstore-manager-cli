@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS autor (
     id              INTEGER      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nome            VARCHAR      NOT NULL,
     sobrenome       VARCHAR,
-    cpf             CHAR(11)     UNIQUE,
-    data_nascimento DATE
+    nacionalidade   VARCHAR
 );
 
 -- ------------------------------------------------------------
@@ -52,7 +51,8 @@ CREATE TABLE IF NOT EXISTS emprestimo (
     id              INTEGER              GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     livro_id        INTEGER              NOT NULL REFERENCES livro(id),
     cliente_id      INTEGER              NOT NULL REFERENCES cliente(id),
-    data_emprestimo TIMESTAMP            NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_devolucao  TIMESTAMP,
+    data_emprestimo TIMESTAMPTZ            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_prevista_devolucao TIMESTAMPTZ    NOT NULL,   
+    data_devolucao_real  TIMESTAMPTZ,
     status          status_emprestimo    NOT NULL DEFAULT 'ativo'
 );
