@@ -9,7 +9,7 @@ export class AutorController {
   async create(): Promise<void> {
     const nome = await ReadlineUtil.ask('Nome: ')
     const sobrenome = await ReadlineUtil.ask('Sobrenome (opcional): ')
-    const nacionalidade = await ReadlineUtil.ask('Nacionalidade: ')
+    const nacionalidade = await ReadlineUtil.ask('Nacionalidade (opcional): ')
 
     const autor = await this.service.create({
       nome,
