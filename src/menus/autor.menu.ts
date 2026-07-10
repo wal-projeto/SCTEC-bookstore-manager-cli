@@ -11,7 +11,7 @@ export class AutorMenu {
       console.log('\n--- Menu Autores ---')
       console.log('1. Cadastrar autor')
       console.log('2. Listar autores')
-      console.log('3. Consultar autor por ID')
+      console.log('3. Consultar autores cadastrados')
       console.log('4. Atualizar autor')
       console.log('5. Remover autor')
       console.log('0. Voltar')

@@ -1,7 +1,10 @@
 import { createInterface, Interface } from 'node:readline/promises'
 
 export class ReadlineUtil {
-  private static instance: Interface = createInterface(process.stdin, process.stdout)
+  private static instance: Interface = createInterface(
+    process.stdin,
+    process.stdout
+  )
 
   static async ask(question: string): Promise<string> {
     const answer = await this.instance.question(question)

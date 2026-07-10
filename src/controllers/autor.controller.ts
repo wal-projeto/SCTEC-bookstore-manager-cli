@@ -8,14 +8,12 @@ export class AutorController {
   async create(): Promise<void> {
     const nome = await ReadlineUtil.ask('Nome: ')
     const sobrenome = await ReadlineUtil.ask('Sobrenome (opcional): ')
-    const cpf = await ReadlineUtil.ask('CPF - 11 dígitos (opcional): ')
-    const dataNascimentoStr = await ReadlineUtil.ask('Data de nascimento AAAA-MM-DD (opcional): ')
+    const nacionalidade = await ReadlineUtil.ask('Nacionalidade: ')
 
     const autor = await this.service.create({
       nome,
       sobrenome: sobrenome || undefined,
-      cpf: cpf || undefined,
-      dataNascimento: dataNascimentoStr ? new Date(dataNascimentoStr) : undefined
+      nacionalidade: nacionalidade || undefined
     })
 
     console.log('Autor cadastrado com sucesso:')
@@ -41,12 +39,12 @@ export class AutorController {
     const id = await ReadlineUtil.askNumber('ID do autor a atualizar: ')
     const nome = await ReadlineUtil.ask('Novo nome (ENTER para manter o atual): ')
     const sobrenome = await ReadlineUtil.ask('Novo sobrenome (ENTER para manter o atual): ')
-    const cpf = await ReadlineUtil.ask('Novo CPF (ENTER para manter o atual): ')
+    const nacionalidade = await ReadlineUtil.ask('Nova nacionalidade (ENTER para manter o atual): ')
 
     const autor = await this.service.update(id, {
       nome: nome || undefined,
       sobrenome: sobrenome || undefined,
-      cpf: cpf || undefined
+      nacionalidade: nacionalidade || undefined
     })
 
     console.log('Autor atualizado com sucesso:')
@@ -60,7 +58,7 @@ export class AutorController {
   }
 
   private print(autor: Autor): void {
-    const cpf = autor.getCpf()
-    console.log(`#${autor.id} - ${autor.nomeCompleto}${cpf ? ` | CPF: ${cpf}` : ''}`)
+    const nacionalidade = autor.getNacionalidade()
+    console.log(`#${autor.id} - ${autor.nomeCompleto}${nacionalidade ? ` | Nacionalidade: ${nacionalidade}` : ''}`)
   }
 }

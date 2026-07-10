@@ -1,3 +1,5 @@
+// npx prettier --write src ( .PRETTIERRC REFORMATA TODOS OS ARQUIVOS DO src)
+
 import 'dotenv/config'
 
 import { AutorController } from './controllers/autor.controller'
@@ -17,7 +19,6 @@ async function bootstrap(): Promise<void> {
   const autorService = new AutorService(autorRepository)
   const autorController = new AutorController(autorService)
   const autorMenu = new AutorMenu(autorController)
-
   const mainMenu = new MainMenu(autorMenu)
   await mainMenu.start()
 }
