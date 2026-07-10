@@ -6,7 +6,7 @@ import {
   CreateAutorInput,
   UpdateAutorInput
 } from '../repositories/autor.repository'
-import { isBlank } from '../utils/validators.util'
+import { isBlank, isValidNome } from '../utils/validators.util'
 
 export class AutorService {
   constructor(private readonly repository: AutorRepository) {}
@@ -14,6 +14,9 @@ export class AutorService {
   async create(input: CreateAutorInput): Promise<Autor> {
     if (isBlank(input.nome)) {
       throw new ValidationError('O nome do autor é obrigatório.')
+    }
+    if (!isValidNome(input.nome)) {
+      throw new ValidationError('Nome inválido. Use apenas letras, espaço, apóstrofo ou hífen.')
     }
 
     return this.repository.create(input)
@@ -34,6 +37,9 @@ export class AutorService {
   async update(id: number, input: UpdateAutorInput): Promise<Autor> {
     if (input.nome !== undefined && isBlank(input.nome)) {
       throw new ValidationError('O nome do autor não pode ficar em branco.')
+    }
+    if (input.nome !== undefined && !isValidNome(input.nome)) {
+      throw new ValidationError('Nome inválido. Use apenas letras, espaço, apóstrofo ou hífen.')
     }
 
     const updated = await this.repository.update(id, input)
