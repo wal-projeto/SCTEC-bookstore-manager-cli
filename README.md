@@ -6,7 +6,68 @@ Aplicação CLI para gerenciamento de uma livraria (autores, livros, clientes e 
 
 > Em desenvolvimento.
 
-## ObjetivosMarkdown Preview Mermaid Support
+## Modelagem do Banco de Dados
+
+Esta modelagem descreve o banco de dados da aplicação: as 4 entidades mínimas exigidas pelo
+enunciado (Autores, Livros, Clientes, Empréstimos), seus campos e os relacionamentos entre elas
+através de chaves primárias e estrangeiras.
+
+```mermaid
+erDiagram
+    AUTOR ||--o{ LIVRO : escreve
+    LIVRO ||--o{ EMPRESTIMO : "é emprestado em"
+    CLIENTE ||--o{ EMPRESTIMO : realiza
+
+    AUTOR {
+        int id PK
+        varchar nome
+        varchar sobrenome
+        varchar nacionalidade
+    }
+    LIVRO {
+        int id PK
+        int autor_id FK
+        varchar titulo
+        varchar genero
+        int ano_publicacao
+        varchar isbn UK
+        int quantidade_total
+        int quantidade_disponivel
+    }
+    CLIENTE {
+        int id PK
+        varchar nome
+        varchar sobrenome
+        char cpf UK
+        varchar email UK
+        varchar telefone
+    }
+    EMPRESTIMO {
+        int id PK
+        int livro_id FK
+        int cliente_id FK
+        timestamptz data_emprestimo
+        timestamptz data_prevista_devolucao
+        timestamptz data_devolucao_real
+        enum status
+    }
+```
+
+### Relacionamentos
+
+- **Autor → Livro** (1:N): um autor pode ter vários livros; cada livro tem exatamente um autor.
+- **Livro → Empréstimo** (1:N): um livro pode ser emprestado várias vezes ao longo do tempo (em momentos diferentes).
+- **Cliente → Empréstimo** (1:N): um cliente pode ter vários empréstimos, atuais e passados.
+
+**OBSERVAÇÃO (regra de negócio):** um livro só pode ser emprestado se `quantidade_disponivel > 0`;
+uma devolução deve encerrar o empréstimo ativo (`status = 'devolvido'`) e devolver o exemplar ao
+acervo (`quantidade_disponivel + 1`). Garantir essa regra é o motivo central de existir uma
+camada de `service` separada do `controller` e do `repository` — é lá que essa validação
+acontece antes de qualquer escrita no banco.
+
+Script completo em [`src/database/schema.sql`](src/database/schema.sql).
+
+## Objetivos
 
 - Gerenciar autores, livros, clientes e empréstimos via terminal.
 - Persistir os dados em um banco PostgreSQL, com regras de negócio aplicadas antes de qualquer escrita (ex.: livro precisa de autor cadastrado, empréstimo exige disponibilidade).
@@ -35,16 +96,6 @@ src/
 ```
 
 Fluxo de dependências: `main.ts` → `menus` → `controllers` → `services` → `repositories` → banco de dados.
-
-## Modelagem do banco de dados
-
-Entidades: `autor`, `livro`, `cliente`, `emprestimo`.
-
-- Um livro pertence a um autor (`livro.autor_id` → `autor.id`).
-- Um empréstimo relaciona um livro e um cliente (`emprestimo.livro_id`, `emprestimo.cliente_id`), com `status` (`ativo` | `devolvido`).
-- `livro.quantidade_disponivel` é decrementada a cada empréstimo ativo e incrementada na devolução.
-
-Script completo em [`src/database/schema.sql`](src/database/schema.sql).
 
 ## Instalação e execução
 
@@ -94,7 +145,7 @@ Script completo em [`src/database/schema.sql`](src/database/schema.sql).
 
 ## Exemplo de uso
 
-```MySQL
+```text
 === BookStore Manager CLI ===
 1. Autores
 2. Livros (em breve)
@@ -107,19 +158,18 @@ Escolha uma opção: 1
 --- Menu Autores ---
 1. Cadastrar autor
 2. Listar autores
-3. Consultar autor por ID
+3. Consultar um autor
 4. Atualizar autor
 5. Remover autor
 0. Voltar
 Escolha uma opção: 1
 Nome: João
 Sobrenome (opcional): Silva
-CPF - 11 dígitos (opcional): 12345678901
-Data de nascimento AAAA-MM-DD (opcional): 1980-05-20
+Nacionalidade (opcional): Brasileira
 Autor cadastrado com sucesso:
-#1 - João Silva | CPF: 12345678901
+#1 - João Silva | Nacionalidade: Brasileira
 ```
 
 ## Integrantes
 
-- (preencher)
+- Walquiria de Oliveira (projeto individual)
