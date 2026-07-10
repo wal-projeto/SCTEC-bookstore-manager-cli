@@ -12,7 +12,8 @@ export function isBlank(value: string | undefined | null): boolean {
 // Terminal → Controller → Service (valida AQUI, em TypeScript) → Repository → Banco (valida de novo, com ENUM/CHECK)
 
 export function isValidNome(nome: string): boolean {
-  return /^[\p{L}\s'-]+$/u.test(nome.trim())
+  return /^(?=.*\p{L})[\p{L}\s'-]+$/u.test(nome.trim())
 }
 // Regex permite: letras(com acento) + espaço; letras + apóstrofo ; letras + hífen; ç pe uma letra Unicode;
-// não permite nome com letra/espaço/apóstrofo/hífen; nome entre apótrofo, nenhum caractere é letra
+// (?=.*\p{L}) exige pelo menos uma letra em algum lugar - sem isso, "---" ou "''" passariam
+// não permite nome com número ou símbolo fora de espaço/apóstrofo/hífen
