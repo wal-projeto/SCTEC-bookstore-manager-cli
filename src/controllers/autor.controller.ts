@@ -1,6 +1,7 @@
 import { Autor } from '../models/autor.model'
 import { AutorService } from '../services/autor.service'
 import { ReadlineUtil } from '../utils/readline.util'
+import { selectFromList } from '../utils/select-from-list.util'
 
 export class AutorController {
   constructor(private readonly service: AutorService) {}
@@ -30,18 +31,25 @@ export class AutorController {
   }
 
   async getById(): Promise<void> {
-    const id = await ReadlineUtil.askNumber('ID do autor: ')
-    const autor = await this.service.getById(id)
+    const autores = await this.service.list()
+    const autor = await selectFromList(autores, (a) => a.nomeCompleto)
+    if (!autor) {
+      return
+    }
     this.print(autor)
   }
 
   async update(): Promise<void> {
-    const id = await ReadlineUtil.askNumber('ID do autor a atualizar: ')
+    const autores = await this.service.list()
+    const selecionado = await selectFromList(autores, (a) => a.nomeCompleto)
+    if (!selecionado) {
+      return
+    }
     const nome = await ReadlineUtil.ask('Novo nome (ENTER para manter o atual): ')
     const sobrenome = await ReadlineUtil.ask('Novo sobrenome (ENTER para manter o atual): ')
     const nacionalidade = await ReadlineUtil.ask('Nova nacionalidade (ENTER para manter o atual): ')
 
-    const autor = await this.service.update(id, {
+    const autor = await this.service.update(selecionado.id, {
       nome: nome || undefined,
       sobrenome: sobrenome || undefined,
       nacionalidade: nacionalidade || undefined
@@ -52,8 +60,12 @@ export class AutorController {
   }
 
   async remove(): Promise<void> {
-    const id = await ReadlineUtil.askNumber('ID do autor a remover: ')
-    await this.service.remove(id)
+    const autores = await this.service.list()
+    const autor = await selectFromList(autores, (a) => a.nomeCompleto)
+    if (!autor) {
+      return
+    }
+    await this.service.remove(autor.id)
     console.log('Autor removido com sucesso.')
   }
 
