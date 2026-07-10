@@ -1,0 +1,32 @@
+{
+  "name": "bookstore-manager-cli",
+  "version": "1.0.0",
+  "description": "CLI para gerenciamento de uma livraria (autores, livros, clientes e empréstimos) com Node.js, TypeScript e PostgreSQL.",
+  "main": "dist/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx --watch src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "lint": "eslint src"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
