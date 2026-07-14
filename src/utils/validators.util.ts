@@ -17,3 +17,15 @@ export function isValidNome(nome: string): boolean {
 // Regex permite: letras(com acento) + espaço; letras + apóstrofo ; letras + hífen; ç pe uma letra Unicode;
 // (?=.*\p{L}) exige pelo menos uma letra em algum lugar - sem isso, "---" ou "''" passariam
 // não permite nome com número ou símbolo fora de espaço/apóstrofo/hífen
+
+export function isValidIsbn(isbn: string): boolean {
+  const semSeparadores = isbn.replace(/[-\s]/g, '')
+  return /^\d{9}[\dX]$/.test(semSeparadores) || /^\d{13}$/.test(semSeparadores)
+}
+// Aceita ISBN-10 (9 dígitos + dígito ou X) ou ISBN-13 (13 dígitos), ignorando hífens/espaços.
+// Só checa o formato, não o dígito verificador real — mesmo critério do isValidCpf.
+
+export function isValidAno(ano: number): boolean {
+  return Number.isInteger(ano) && ano >= 1000 && ano <= new Date().getFullYear()
+}
+// Ano de publicação plausível: inteiro, a partir de 1000, não maior que o ano atual.
