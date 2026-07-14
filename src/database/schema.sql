@@ -3,7 +3,15 @@
 --  Entidades: autor, livro, cliente, emprestimo
 -- ============================================================
 
-CREATE TYPE status_emprestimo AS ENUM ('ativo', 'devolvido');
+-- Postgres não tem "CREATE TYPE IF NOT EXISTS" — este bloco confere no
+-- catálogo (pg_type) antes de criar, pra rodar o script quantas vezes
+-- quiser sem erro e sem apagar nada.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_emprestimo') THEN
+    CREATE TYPE status_emprestimo AS ENUM ('ativo', 'devolvido');
+  END IF;
+END$$;
 
 -- ------------------------------------------------------------
 -- autor
