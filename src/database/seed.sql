@@ -107,34 +107,39 @@ ON CONFLICT (isbn) DO NOTHING;
 -- ativo: A Hora da Estrela / Ana Souza
 INSERT INTO emprestimo (livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status)
 SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP + INTERVAL '9 days', NULL, 'ativo'
-FROM livro l, cliente c
+FROM livro l
+CROSS JOIN cliente c
 WHERE l.isbn = '9788532507860' AND c.cpf = '11122233344'
 AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
 
 -- ativo: Gabriela, Cravo e Canela / Bruno Lima
 INSERT INTO emprestimo (livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status)
 SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP + INTERVAL '11 days', NULL, 'ativo'
-FROM livro l, cliente c
+FROM livro l
+CROSS JOIN cliente c
 WHERE l.isbn = '9788535912324' AND c.cpf = '22233344455'
 AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
 
 -- ativo e ATRASADO: Cem Anos de Solidão / Carla Ferreira (prazo venceu há 6 dias)
 INSERT INTO emprestimo (livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status)
 SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '20 days', CURRENT_TIMESTAMP - INTERVAL '6 days', NULL, 'ativo'
-FROM livro l, cliente c
+FROM livro l
+CROSS JOIN cliente c
 WHERE l.isbn = '9788501063279' AND c.cpf = '33344455566'
 AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
 
 -- devolvido: Dom Casmurro / Diego Santos
 INSERT INTO emprestimo (livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status)
 SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '16 days', CURRENT_TIMESTAMP - INTERVAL '18 days', 'devolvido'
-FROM livro l, cliente c
+FROM livro l
+CROSS JOIN cliente c
 WHERE l.isbn = '9788535910672' AND c.cpf = '44455566677'
 AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
 
 -- devolvido: Harry Potter e a Pedra Filosofal / Elisa Ramos
 INSERT INTO emprestimo (livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status)
 SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '15 days', CURRENT_TIMESTAMP - INTERVAL '1 days', CURRENT_TIMESTAMP - INTERVAL '2 days', 'devolvido'
-FROM livro l, cliente c
+FROM livro l
+CROSS JOIN cliente c
 WHERE l.isbn = '9788532511010' AND c.cpf = '55566677788'
 AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
