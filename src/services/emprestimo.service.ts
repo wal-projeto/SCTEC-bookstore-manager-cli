@@ -55,10 +55,6 @@ export class EmprestimoService {
   }
 
   async registrarDevolucao(id: number): Promise<Emprestimo> {
-    const emprestimo = await this.getById(id)
-    if (!emprestimo.estaAtivo) {
-      throw new ValidationError('Este empréstimo já foi devolvido.')
-    }
     return this.repository.registrarDevolucao(id)
   }
 }

@@ -1,4 +1,4 @@
-import { Pool } from 'pg'
+import { Pool, PoolClient } from 'pg'
 
 import { Emprestimo, StatusEmprestimo } from '../models/emprestimo.model'
 import { NotFoundError } from '../errors/not-found.error'
@@ -44,20 +44,8 @@ export class EmprestimoRepository {
   constructor(private readonly pool: Pool) {}
 
   async create(input: CreateEmprestimoInput): Promise<Emprestimo> {
-    const client = await this.pool.connect()
-    try {
-      await client.query('BEGIN')
-
-      const { rows: livroRows } = await client.query<{ quantidade_disponivel: number }>(
-        'SELECT quantidade_disponivel FROM livro WHERE id = $1 FOR UPDATE',
-        [input.livroId]
-      )
-      if (livroRows.length === 0) {
-        throw new NotFoundError('Livro', input.livroId)
-      }
-      if (livroRows[0].quantidade_disponivel <= 0) {
-        throw new ValidationError('Este livro não está disponível para empréstimo no momento.')
-      }
+    return this.withTransaction(async (client) => {
+      await this.ensureLivroDisponivel(client, input.livroId)
 
       const { rows } = await client.query<EmprestimoRow>(
         `INSERT INTO emprestimo (livro_id, cliente_id, data_prevista_devolucao)
@@ -71,14 +59,8 @@ export class EmprestimoRepository {
         [input.livroId]
       )
 
-      await client.query('COMMIT')
       return this.toModel(rows[0])
-    } catch (error) {
-      await client.query('ROLLBACK')
-      throw error
-    } finally {
-      client.release()
-    }
+    })
   }
 
   async findAllDetalhado(): Promise<EmprestimoDetalhado[]> {
@@ -111,21 +93,8 @@ export class EmprestimoRepository {
   }
 
   async registrarDevolucao(id: number): Promise<Emprestimo> {
-    const client = await this.pool.connect()
-    try {
-      await client.query('BEGIN')
-
-      const { rows } = await client.query<EmprestimoRow>(
-        `SELECT id, livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status
-         FROM emprestimo WHERE id = $1 FOR UPDATE`,
-        [id]
-      )
-      if (rows.length === 0) {
-        throw new NotFoundError('Empréstimo', id)
-      }
-      if (rows[0].status === 'devolvido') {
-        throw new ValidationError('Este empréstimo já foi devolvido.')
-      }
+    return this.withTransaction(async (client) => {
+      const emprestimo = await this.ensureEmprestimoPodeSerDevolvido(client, id)
 
       const { rows: updatedRows } = await client.query<EmprestimoRow>(
         `UPDATE emprestimo
@@ -137,17 +106,54 @@ export class EmprestimoRepository {
 
       await client.query(
         'UPDATE livro SET quantidade_disponivel = quantidade_disponivel + 1 WHERE id = $1',
-        [rows[0].livro_id]
+        [emprestimo.livro_id]
       )
 
-      await client.query('COMMIT')
       return this.toModel(updatedRows[0])
+    })
+  }
+
+  private async withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await this.pool.connect()
+    try {
+      await client.query('BEGIN')
+      const result = await fn(client)
+      await client.query('COMMIT')
+      return result
     } catch (error) {
       await client.query('ROLLBACK')
       throw error
     } finally {
       client.release()
     }
+  }
+
+  private async ensureLivroDisponivel(client: PoolClient, livroId: number): Promise<void> {
+    const { rows } = await client.query<{ quantidade_disponivel: number }>(
+      'SELECT quantidade_disponivel FROM livro WHERE id = $1 FOR UPDATE',
+      [livroId]
+    )
+    if (rows.length === 0) {
+      throw new NotFoundError('Livro', livroId)
+    }
+    if (rows[0].quantidade_disponivel <= 0) {
+      throw new ValidationError('Este livro não está disponível para empréstimo no momento.')
+    }
+  }
+
+  private async ensureEmprestimoPodeSerDevolvido(client: PoolClient, id: number): Promise<EmprestimoRow> {
+    const { rows } = await client.query<EmprestimoRow>(
+      `SELECT id, livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status
+       FROM emprestimo WHERE id = $1 FOR UPDATE`,
+      [id]
+    )
+    if (rows.length === 0) {
+      throw new NotFoundError('Empréstimo', id)
+    }
+    if (rows[0].status === 'devolvido') {
+      throw new ValidationError('Este empréstimo já foi devolvido.')
+    }
+    return rows[0]
   }
 
   private toModel(row: EmprestimoRow): Emprestimo {
