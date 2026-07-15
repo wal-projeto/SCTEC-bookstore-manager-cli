@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 
 import { Livro } from '../models/livro.model'
+import { ValidationError } from '../errors/validation.error'
 
 export interface CreateLivroInput {
   autorId: number
@@ -77,10 +78,20 @@ export class LivroRepository {
       return null
     }
 
+    const quantidadeTotal = input.quantidadeTotal ?? existing.getQuantidadeTotal()
+    const emprestados = existing.getQuantidadeTotal() - existing.getQuantidadeDisponivel()
+    const quantidadeDisponivel = quantidadeTotal - emprestados
+
+    if (quantidadeDisponivel < 0) {
+      throw new ValidationError(
+        `Não é possível reduzir a quantidade total para ${quantidadeTotal}: existem ${emprestados} exemplar(es) emprestado(s) no momento.`
+      )
+    }
+
     const { rows } = await this.pool.query<LivroRow>(
       `UPDATE livro
-       SET autor_id = $1, titulo = $2, genero = $3, ano_publicacao = $4, isbn = $5, quantidade_total = $6
-       WHERE id = $7
+       SET autor_id = $1, titulo = $2, genero = $3, ano_publicacao = $4, isbn = $5, quantidade_total = $6, quantidade_disponivel = $7
+       WHERE id = $8
        RETURNING id, autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel`,
       [
         input.autorId ?? existing.getAutorId(),
@@ -88,7 +99,8 @@ export class LivroRepository {
         input.genero ?? existing.getGenero(),
         input.anoPublicacao ?? existing.getAnoPublicacao(),
         input.isbn ?? existing.getIsbn(),
-        input.quantidadeTotal ?? existing.getQuantidadeTotal(),
+        quantidadeTotal,
+        quantidadeDisponivel,
         id
       ]
     )

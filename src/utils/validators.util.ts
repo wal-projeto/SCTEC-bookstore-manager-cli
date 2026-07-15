@@ -19,11 +19,12 @@ export function isValidNome(nome: string): boolean {
 // não permite nome com número ou símbolo fora de espaço/apóstrofo/hífen
 
 export function isValidIsbn(isbn: string): boolean {
-  const semSeparadores = isbn.replace(/[-\s]/g, '')
+  const semSeparadores = isbn.replace(/[-\s]/g, '').toUpperCase()
   return /^\d{9}[\dX]$/.test(semSeparadores) || /^\d{13}$/.test(semSeparadores)
 }
 // Aceita ISBN-10 (9 dígitos + dígito ou X) ou ISBN-13 (13 dígitos), ignorando hífens/espaços.
 // Só checa o formato, não o dígito verificador real — mesmo critério do isValidCpf.
+// .toUpperCase() normaliza o "x" minúsculo do dígito verificador do ISBN-10, que também é válido.
 
 export function isValidAno(ano: number): boolean {
   return Number.isInteger(ano) && ano >= 1000 && ano <= new Date().getFullYear()
