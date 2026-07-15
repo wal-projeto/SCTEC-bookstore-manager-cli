@@ -2,7 +2,7 @@ import { Pool } from 'pg'
 
 import { Cliente } from '../models/cliente.model'
 import { ValidationError } from '../errors/validation.error'
-import { isForeignKeyViolation } from '../utils/postgres-error.util'
+import { isForeignKeyViolation, isUniqueViolation } from '../utils/postgres-error.util'
 
 export interface CreateClienteInput {
   nome: string
@@ -27,13 +27,23 @@ export class ClienteRepository {
   constructor(private readonly pool: Pool) {}
 
   async create(input: CreateClienteInput): Promise<Cliente> {
-    const { rows } = await this.pool.query<ClienteRow>(
-      `INSERT INTO cliente (nome, sobrenome, cpf, email, telefone)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, nome, sobrenome, cpf, email, telefone`,
-      [input.nome, input.sobrenome ?? null, input.cpf, input.email ?? null, input.telefone ?? null]
-    )
-    return this.toModel(rows[0])
+    try {
+      const { rows } = await this.pool.query<ClienteRow>(
+        `INSERT INTO cliente (nome, sobrenome, cpf, email, telefone)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, nome, sobrenome, cpf, email, telefone`,
+        [input.nome, input.sobrenome ?? null, input.cpf, input.email ?? null, input.telefone ?? null]
+      )
+      return this.toModel(rows[0])
+    } catch (error) {
+      if (isUniqueViolation(error, 'cliente_cpf_key')) {
+        throw new ValidationError('Já existe um cliente cadastrado com esse CPF.')
+      }
+      if (isUniqueViolation(error, 'cliente_email_key')) {
+        throw new ValidationError('Já existe um cliente cadastrado com esse email.')
+      }
+      throw error
+    }
   }
 
   async findAll(): Promise<Cliente[]> {
@@ -68,25 +78,24 @@ export class ClienteRepository {
   }
 
   async update(id: number, input: UpdateClienteInput): Promise<Cliente | null> {
-    const existing = await this.findById(id)
-    if (!existing) {
-      return null
+    try {
+      const { rows } = await this.pool.query<ClienteRow>(
+        `UPDATE cliente
+         SET nome = COALESCE($1, nome),
+             sobrenome = COALESCE($2, sobrenome),
+             email = COALESCE($3, email),
+             telefone = COALESCE($4, telefone)
+         WHERE id = $5
+         RETURNING id, nome, sobrenome, cpf, email, telefone`,
+        [input.nome ?? null, input.sobrenome ?? null, input.email ?? null, input.telefone ?? null, id]
+      )
+      return rows[0] ? this.toModel(rows[0]) : null
+    } catch (error) {
+      if (isUniqueViolation(error, 'cliente_email_key')) {
+        throw new ValidationError('Já existe um cliente cadastrado com esse email.')
+      }
+      throw error
     }
-
-    const { rows } = await this.pool.query<ClienteRow>(
-      `UPDATE cliente
-       SET nome = $1, sobrenome = $2, email = $3, telefone = $4
-       WHERE id = $5
-       RETURNING id, nome, sobrenome, cpf, email, telefone`,
-      [
-        input.nome ?? existing.getNome(),
-        input.sobrenome ?? existing.getSobrenome(),
-        input.email ?? existing.getEmail(),
-        input.telefone ?? existing.getTelefone(),
-        id
-      ]
-    )
-    return this.toModel(rows[0])
   }
 
   async delete(id: number): Promise<boolean> {

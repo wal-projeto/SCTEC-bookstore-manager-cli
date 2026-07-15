@@ -32,17 +32,19 @@ export class ClienteService {
     if (await this.existsByCpf(input.cpf)) {
       throw new ValidationError('Já existe um cliente cadastrado com esse CPF.')
     }
-    if (input.email !== undefined) {
-      if (!isValidEmail(input.email)) {
+
+    const email = input.email !== undefined ? input.email.trim().toLowerCase() : undefined
+    if (email !== undefined) {
+      if (!isValidEmail(email)) {
         throw new ValidationError('Email inválido.')
       }
-      const existente = await this.repository.findByEmail(input.email)
+      const existente = await this.repository.findByEmail(email)
       if (existente) {
         throw new ValidationError('Já existe um cliente cadastrado com esse email.')
       }
     }
 
-    return this.repository.create(input)
+    return this.repository.create({ ...input, email })
   }
 
   async list(): Promise<Cliente[]> {
@@ -64,17 +66,18 @@ export class ClienteService {
     if (input.nome !== undefined && !isValidNome(input.nome)) {
       throw new ValidationError('Nome inválido. Use apenas letras, espaço, apóstrofo ou hífen.')
     }
-    if (input.email !== undefined) {
-      if (!isValidEmail(input.email)) {
+    const email = input.email !== undefined ? input.email.trim().toLowerCase() : undefined
+    if (email !== undefined) {
+      if (!isValidEmail(email)) {
         throw new ValidationError('Email inválido.')
       }
-      const existente = await this.repository.findByEmail(input.email)
+      const existente = await this.repository.findByEmail(email)
       if (existente && existente.id !== id) {
         throw new ValidationError('Já existe um cliente cadastrado com esse email.')
       }
     }
 
-    const updated = await this.repository.update(id, input)
+    const updated = await this.repository.update(id, { ...input, email })
     if (!updated) {
       throw new NotFoundError('Cliente', id)
     }
