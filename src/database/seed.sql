@@ -102,6 +102,13 @@ ON CONFLICT (isbn) DO NOTHING;
 -- idempotente via NOT EXISTS por (livro_id, cliente_id): não existe
 -- chave natural única de verdade pra um empréstimo, mas como o seed
 -- só cria 1 empréstimo por par livro/cliente, isso basta pra não duplicar.
+--
+-- CROSS JOIN entre livro e cliente: as duas tabelas não têm nenhuma coluna
+-- em comum (não é um JOIN de verdade), cada uma é filtrada de forma
+-- independente pelo WHERE (isbn de um lado, cpf do outro). Antes disso
+-- era "FROM livro l, cliente c" (vírgula = cross join implícito, sintaxe
+-- antiga) — sugestão do Sourcery pra deixar explícito que o cruzamento
+-- sem relação é proposital, e não uma condição de junção esquecida.
 -- ------------------------------------------------------------
 
 -- ativo: A Hora da Estrela / Ana Souza
