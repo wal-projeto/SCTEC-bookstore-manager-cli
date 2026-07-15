@@ -5,6 +5,8 @@
 import { Pool } from 'pg'
 
 import { Autor } from '../models/autor.model'
+import { ValidationError } from '../errors/validation.error'
+import { isForeignKeyViolation } from '../utils/postgres-error.util'
 
 export interface CreateAutorInput {
   nome: string
@@ -71,11 +73,18 @@ export class AutorRepository {
   }
 
   async delete(id: number): Promise<boolean> {
-    const { rowCount } = await this.pool.query(
-      'DELETE FROM autor WHERE id = $1',
-      [id]
-    )
-    return (rowCount ?? 0) > 0
+    try {
+      const { rowCount } = await this.pool.query(
+        'DELETE FROM autor WHERE id = $1',
+        [id]
+      )
+      return (rowCount ?? 0) > 0
+    } catch (error) {
+      if (isForeignKeyViolation(error)) {
+        throw new ValidationError('Não é possível remover: existem livros vinculados a este autor.')
+      }
+      throw error
+    }
   }
 
   private toModel(row: AutorRow): Autor {

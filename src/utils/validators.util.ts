@@ -30,3 +30,7 @@ export function isValidAno(ano: number): boolean {
   return Number.isInteger(ano) && ano >= 1000 && ano <= new Date().getFullYear()
 }
 // Ano de publicação plausível: inteiro, a partir de 1000, não maior que o ano atual.
+
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+}
