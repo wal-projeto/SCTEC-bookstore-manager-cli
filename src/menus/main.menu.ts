@@ -1,13 +1,15 @@
 import { AutorMenu } from './autor.menu'
 import { LivroMenu } from './livro.menu'
 import { ClienteMenu } from './cliente.menu'
+import { EmprestimoMenu } from './emprestimo.menu'
 import { ReadlineUtil } from '../utils/readline.util'
 
 export class MainMenu {
   constructor(
     private readonly autorMenu: AutorMenu,
     private readonly livroMenu: LivroMenu,
-    private readonly clienteMenu: ClienteMenu
+    private readonly clienteMenu: ClienteMenu,
+    private readonly emprestimoMenu: EmprestimoMenu
   ) {}
 
   /** Loop principal: mostra o menu geral e despacha pro submenu do
@@ -20,7 +22,7 @@ export class MainMenu {
       console.log('1. Autores')
       console.log('2. Livros')
       console.log('3. Clientes')
-      console.log('4. Empréstimos (em breve)')
+      console.log('4. Empréstimos')
       console.log('5. Relatórios (em breve)')
       console.log('0. Encerrar aplicação')
 
@@ -35,6 +37,9 @@ export class MainMenu {
           break
         case '3':
           await this.clienteMenu.show()
+          break
+        case '4':
+          await this.emprestimoMenu.show()
           break
         case '0':
           sair = true
