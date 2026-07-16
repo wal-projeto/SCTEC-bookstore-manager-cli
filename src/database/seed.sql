@@ -97,8 +97,8 @@ FROM autor WHERE nome = 'Gabriel' AND sobrenome = 'García Márquez'
 ON CONFLICT (isbn) DO NOTHING;
 
 -- ------------------------------------------------------------
--- emprestimo (5 registros) - livro/cliente resolvidos por isbn/cpf
--- 3 ativos (um deles já atrasado) + 2 já devolvidos
+-- emprestimo (6 registros) - livro/cliente resolvidos por isbn/cpf
+-- 4 ativos (dois deles já atrasados) + 2 já devolvidos
 -- idempotente via NOT EXISTS por (livro_id, cliente_id): não existe
 -- chave natural única de verdade pra um empréstimo, mas como o seed
 -- só cria 1 empréstimo por par livro/cliente, isso basta pra não duplicar.
@@ -133,6 +133,14 @@ SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '20 days', CURRENT_TIMESTAMP - I
 FROM livro l
 CROSS JOIN cliente c
 WHERE l.isbn = '9788501063279' AND c.cpf = '33344455566'
+AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
+
+-- ativo e ATRASADO: Harry Potter e a Câmara Secreta / Carla Ferreira (prazo venceu há 3 dias)
+INSERT INTO emprestimo (livro_id, cliente_id, data_emprestimo, data_prevista_devolucao, data_devolucao_real, status)
+SELECT l.id, c.id, CURRENT_TIMESTAMP - INTERVAL '17 days', CURRENT_TIMESTAMP - INTERVAL '3 days', NULL, 'ativo'
+FROM livro l
+CROSS JOIN cliente c
+WHERE l.isbn = '9788532511027' AND c.cpf = '33344455566'
 AND NOT EXISTS (SELECT 1 FROM emprestimo e WHERE e.livro_id = l.id AND e.cliente_id = c.id);
 
 -- devolvido: Dom Casmurro / Diego Santos

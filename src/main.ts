@@ -6,16 +6,19 @@ import { AutorController } from './controllers/autor.controller'
 import { LivroController } from './controllers/livro.controller'
 import { ClienteController } from './controllers/cliente.controller'
 import { EmprestimoController } from './controllers/emprestimo.controller'
+import { RelatorioController } from './controllers/relatorio.controller'
 import { closeDatabase, initDatabase, pool } from './database/connection'
 import { MainMenu } from './menus/main.menu'
 import { AutorMenu } from './menus/autor.menu'
 import { LivroMenu } from './menus/livro.menu'
 import { ClienteMenu } from './menus/cliente.menu'
 import { EmprestimoMenu } from './menus/emprestimo.menu'
+import { RelatorioMenu } from './menus/relatorio.menu'
 import { AutorRepository } from './repositories/autor.repository'
 import { LivroRepository } from './repositories/livro.repository'
 import { ClienteRepository } from './repositories/cliente.repository'
 import { EmprestimoRepository } from './repositories/emprestimo.repository'
+import { RelatorioRepository } from './repositories/relatorio.repository'
 import { AutorService } from './services/autor.service'
 import { LivroService } from './services/livro.service'
 import { ClienteService } from './services/cliente.service'
@@ -47,7 +50,11 @@ async function bootstrap(): Promise<void> {
   const emprestimoController = new EmprestimoController(emprestimoService, livroService, clienteService)
   const emprestimoMenu = new EmprestimoMenu(emprestimoController)
 
-  const mainMenu = new MainMenu(autorMenu, livroMenu, clienteMenu, emprestimoMenu)
+  const relatorioRepository = new RelatorioRepository(pool)
+  const relatorioController = new RelatorioController(relatorioRepository)
+  const relatorioMenu = new RelatorioMenu(relatorioController)
+
+  const mainMenu = new MainMenu(autorMenu, livroMenu, clienteMenu, emprestimoMenu, relatorioMenu)
   await mainMenu.start()
 }
 
