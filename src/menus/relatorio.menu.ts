@@ -12,7 +12,7 @@ export class RelatorioMenu {
       console.log('1. Livros disponíveis')
       console.log('2. Livros emprestados')
       console.log('3. Livros cadastrados por autor')
-      console.log('4. Quantidade de empréstimos por livro')
+      console.log('4. Top 10 livros mais emprestados')
       console.log('5. Clientes com empréstimos ativos')
       console.log('6. Empréstimos atrasados')
       console.log('0. Voltar')

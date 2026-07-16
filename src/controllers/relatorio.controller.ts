@@ -46,6 +46,7 @@ export class RelatorioController {
       console.log('Nenhum livro cadastrado.')
       return
     }
+    console.log('Top 10 livros mais emprestados:')
     livros.forEach((livro) => {
       console.log(`${livro.livroTitulo} - ${livro.quantidadeEmprestimos} empréstimo(s)`)
     })
