@@ -2,6 +2,7 @@ import { AutorMenu } from './autor.menu'
 import { LivroMenu } from './livro.menu'
 import { ClienteMenu } from './cliente.menu'
 import { EmprestimoMenu } from './emprestimo.menu'
+import { RelatorioMenu } from './relatorio.menu'
 import { ReadlineUtil } from '../utils/readline.util'
 
 export class MainMenu {
@@ -9,7 +10,8 @@ export class MainMenu {
     private readonly autorMenu: AutorMenu,
     private readonly livroMenu: LivroMenu,
     private readonly clienteMenu: ClienteMenu,
-    private readonly emprestimoMenu: EmprestimoMenu
+    private readonly emprestimoMenu: EmprestimoMenu,
+    private readonly relatorioMenu: RelatorioMenu
   ) {}
 
   /** Loop principal: mostra o menu geral e despacha pro submenu do
@@ -23,7 +25,7 @@ export class MainMenu {
       console.log('2. Livros')
       console.log('3. Clientes')
       console.log('4. Empréstimos')
-      console.log('5. Relatórios (em breve)')
+      console.log('5. Relatórios')
       console.log('0. Encerrar aplicação')
 
       const opcao = await ReadlineUtil.ask('Escolha uma opção: ')
@@ -40,6 +42,9 @@ export class MainMenu {
           break
         case '4':
           await this.emprestimoMenu.show()
+          break
+        case '5':
+          await this.relatorioMenu.show()
           break
         case '0':
           sair = true
