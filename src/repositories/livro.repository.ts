@@ -2,6 +2,7 @@ import { Pool } from 'pg'
 
 import { Livro } from '../models/livro.model'
 import { ValidationError } from '../errors/validation.error'
+import { isForeignKeyViolation, isUniqueViolation } from '../utils/postgres-error.util'
 
 export interface CreateLivroInput {
   autorId: number
@@ -30,20 +31,27 @@ export class LivroRepository {
 
   async create(input: CreateLivroInput): Promise<Livro> {
     const quantidadeTotal = input.quantidadeTotal ?? 1
-    const { rows } = await this.pool.query<LivroRow>(
-      `INSERT INTO livro (autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel)
-       VALUES ($1, $2, $3, $4, $5, $6, $6)
-       RETURNING id, autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel`,
-      [
-        input.autorId,
-        input.titulo,
-        input.genero ?? null,
-        input.anoPublicacao ?? null,
-        input.isbn ?? null,
-        quantidadeTotal
-      ]
-    )
-    return this.toModel(rows[0])
+    try {
+      const { rows } = await this.pool.query<LivroRow>(
+        `INSERT INTO livro (autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel)
+         VALUES ($1, $2, $3, $4, $5, $6, $6)
+         RETURNING id, autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel`,
+        [
+          input.autorId,
+          input.titulo,
+          input.genero ?? null,
+          input.anoPublicacao ?? null,
+          input.isbn ?? null,
+          quantidadeTotal
+        ]
+      )
+      return this.toModel(rows[0])
+    } catch (error) {
+      if (isUniqueViolation(error, 'livro_isbn_key')) {
+        throw new ValidationError('Já existe um livro cadastrado com esse ISBN.')
+      }
+      throw error
+    }
   }
 
   async findAll(): Promise<Livro[]> {
@@ -88,31 +96,45 @@ export class LivroRepository {
       )
     }
 
-    const { rows } = await this.pool.query<LivroRow>(
-      `UPDATE livro
-       SET autor_id = $1, titulo = $2, genero = $3, ano_publicacao = $4, isbn = $5, quantidade_total = $6, quantidade_disponivel = $7
-       WHERE id = $8
-       RETURNING id, autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel`,
-      [
-        input.autorId ?? existing.getAutorId(),
-        input.titulo ?? existing.getTitulo(),
-        input.genero ?? existing.getGenero(),
-        input.anoPublicacao ?? existing.getAnoPublicacao(),
-        input.isbn ?? existing.getIsbn(),
-        quantidadeTotal,
-        quantidadeDisponivel,
-        id
-      ]
-    )
-    return this.toModel(rows[0])
+    try {
+      const { rows } = await this.pool.query<LivroRow>(
+        `UPDATE livro
+         SET autor_id = $1, titulo = $2, genero = $3, ano_publicacao = $4, isbn = $5, quantidade_total = $6, quantidade_disponivel = $7
+         WHERE id = $8
+         RETURNING id, autor_id, titulo, genero, ano_publicacao, isbn, quantidade_total, quantidade_disponivel`,
+        [
+          input.autorId ?? existing.getAutorId(),
+          input.titulo ?? existing.getTitulo(),
+          input.genero ?? existing.getGenero(),
+          input.anoPublicacao ?? existing.getAnoPublicacao(),
+          input.isbn ?? existing.getIsbn(),
+          quantidadeTotal,
+          quantidadeDisponivel,
+          id
+        ]
+      )
+      return this.toModel(rows[0])
+    } catch (error) {
+      if (isUniqueViolation(error, 'livro_isbn_key')) {
+        throw new ValidationError('Já existe um livro cadastrado com esse ISBN.')
+      }
+      throw error
+    }
   }
 
   async delete(id: number): Promise<boolean> {
-    const { rowCount } = await this.pool.query(
-      'DELETE FROM livro WHERE id = $1',
-      [id]
-    )
-    return (rowCount ?? 0) > 0
+    try {
+      const { rowCount } = await this.pool.query(
+        'DELETE FROM livro WHERE id = $1',
+        [id]
+      )
+      return (rowCount ?? 0) > 0
+    } catch (error) {
+      if (isForeignKeyViolation(error)) {
+        throw new ValidationError('Não é possível remover: existem empréstimos vinculados a este livro.')
+      }
+      throw error
+    }
   }
 
   private toModel(row: LivroRow): Livro {
