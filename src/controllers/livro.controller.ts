@@ -51,7 +51,7 @@ export class LivroController {
     livros.forEach((livro) => this.print(livro))
   }
 
-  async getById(): Promise<void> {
+  async findAndShow(): Promise<void> {
     const livros = await this.service.list()
     const livro = await selectFromList(livros, (l) => l.getTitulo())
     if (!livro) {

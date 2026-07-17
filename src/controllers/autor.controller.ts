@@ -30,7 +30,7 @@ export class AutorController {
     autores.forEach((autor) => this.print(autor))
   }
 
-  async getById(): Promise<void> {
+  async findAndShow(): Promise<void> {
     const autores = await this.service.list()
     const autor = await selectFromList(autores, (a) => a.nomeCompleto)
     if (!autor) {

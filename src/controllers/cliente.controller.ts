@@ -34,7 +34,7 @@ export class ClienteController {
     clientes.forEach((cliente) => this.print(cliente))
   }
 
-  async getById(): Promise<void> {
+  async findAndShow(): Promise<void> {
     const clientes = await this.service.list()
     const cliente = await selectFromList(clientes, (c) => c.nomeCompleto)
     if (!cliente) {
