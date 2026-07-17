@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 
 import { Livro } from '../models/livro.model'
+import { NotFoundError } from '../errors/not-found.error'
 import { ValidationError } from '../errors/validation.error'
 import { isForeignKeyViolation, isUniqueViolation } from '../utils/postgres-error.util'
 
@@ -47,8 +48,9 @@ export class LivroRepository {
       )
       return this.toModel(rows[0])
     } catch (error) {
-      if (isUniqueViolation(error, 'livro_isbn_key')) {
-        throw new ValidationError('Já existe um livro cadastrado com esse ISBN.')
+      this.ensureIsbnNaoDuplicado(error)
+      if (isForeignKeyViolation(error, 'livro_autor_id_fkey')) {
+        throw new NotFoundError('Autor', input.autorId)
       }
       throw error
     }
@@ -115,8 +117,9 @@ export class LivroRepository {
       )
       return this.toModel(rows[0])
     } catch (error) {
-      if (isUniqueViolation(error, 'livro_isbn_key')) {
-        throw new ValidationError('Já existe um livro cadastrado com esse ISBN.')
+      this.ensureIsbnNaoDuplicado(error)
+      if (isForeignKeyViolation(error, 'livro_autor_id_fkey')) {
+        throw new NotFoundError('Autor', input.autorId ?? existing.getAutorId())
       }
       throw error
     }
@@ -130,10 +133,16 @@ export class LivroRepository {
       )
       return (rowCount ?? 0) > 0
     } catch (error) {
-      if (isForeignKeyViolation(error)) {
+      if (isForeignKeyViolation(error, 'emprestimo_livro_id_fkey')) {
         throw new ValidationError('Não é possível remover: existem empréstimos vinculados a este livro.')
       }
       throw error
+    }
+  }
+
+  private ensureIsbnNaoDuplicado(error: unknown): void {
+    if (isUniqueViolation(error, 'livro_isbn_key')) {
+      throw new ValidationError('Já existe um livro cadastrado com esse ISBN.')
     }
   }
 

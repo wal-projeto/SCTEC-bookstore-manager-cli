@@ -80,7 +80,7 @@ export class AutorRepository {
       )
       return (rowCount ?? 0) > 0
     } catch (error) {
-      if (isForeignKeyViolation(error)) {
+      if (isForeignKeyViolation(error, 'livro_autor_id_fkey')) {
         throw new ValidationError('Não é possível remover: existem livros vinculados a este autor.')
       }
       throw error
