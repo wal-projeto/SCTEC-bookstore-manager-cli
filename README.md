@@ -53,6 +53,7 @@ erDiagram
     }
 ```
 
+
 ### Relacionamentos
 
 - **Autor → Livro** (1:N): um autor pode ter vários livros; cada livro tem exatamente um autor.
@@ -169,6 +170,16 @@ Nacionalidade (opcional): Brasileira
 Autor cadastrado com sucesso:
 #1 - João Silva | Nacionalidade: Brasileira
 ```
+
+## Melhorias futuras
+
+- **Permitir mais de um autor por livro**: hoje cada livro só pode ter um autor
+  cadastrado (o campo `autor_id` só guarda um id). Pesquisando um pouco, vi que
+  pra fazer isso direito precisaria de uma tabela nova no meio (`livro_autor`)
+  ligando livros e autores em N:N, ao invés da chave estrangeira simples que
+  tenho hoje. Não cheguei a implementar porque não era um requisito do projeto
+  e mexeria em várias partes do código (cadastro, edição, tela de seleção), mas
+  fica registrada a ideia pra uma próxima versão.
 
 ## Integrantes
 
