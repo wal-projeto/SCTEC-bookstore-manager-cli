@@ -106,7 +106,7 @@ export class ClienteRepository {
       )
       return (rowCount ?? 0) > 0
     } catch (error) {
-      if (isForeignKeyViolation(error)) {
+      if (isForeignKeyViolation(error, 'emprestimo_cliente_id_fkey')) {
         throw new ValidationError('Não é possível remover: existem empréstimos vinculados a este cliente.')
       }
       throw error
