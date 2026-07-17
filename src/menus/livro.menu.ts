@@ -27,7 +27,7 @@ export class LivroMenu {
             await this.controller.list()
             break
           case '3':
-            await this.controller.getById()
+            await this.controller.findAndShow()
             break
           case '4':
             await this.controller.update()
