@@ -1,7 +1,3 @@
-/** autor.repository é quem utiliza o new Autor(...)
- *
- */
-
 import { Pool } from 'pg'
 
 import { Autor } from '../models/autor.model'

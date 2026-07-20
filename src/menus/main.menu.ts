@@ -14,8 +14,6 @@ export class MainMenu {
     private readonly relatorioMenu: RelatorioMenu
   ) {}
 
-  /** Loop principal: mostra o menu geral e despacha pro submenu do
-   *  módulo escolhido, até o usuário optar por encerrar. */
   async start(): Promise<void> {
     let sair = false
 

@@ -1,14 +1,5 @@
-// LÓGICA DE CONECÇÃO, NÃO UMA CONEXÃO DE FATO
-
 import { Pool } from 'pg'
 
-
-/**
- * operador ternário: condição ? valorSeVerdadeiro : valorSeFalso. 
- * Se DB_PORT existir (qualquer texto não-vazio é "verdadeiro" em JS), 
- * converte pra número. Se não existir (undefined), o resultado é undefined 
- * também — sem tentar converter nada.
- */
 const port = process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined
 
 export const pool = new Pool({
@@ -20,7 +11,6 @@ export const pool = new Pool({
   max: 10,
   min: 2
 })
-
 
 pool.on('error', (err) => {
   console.error('Erro inesperado no pool de conexões:', err)

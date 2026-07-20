@@ -1,5 +1,3 @@
-// npx prettier --write src ( .PRETTIERRC REFORMATA TODOS OS ARQUIVOS DO src)
-
 import 'dotenv/config'
 
 import { AutorController } from './controllers/autor.controller'
